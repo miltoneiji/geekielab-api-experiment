@@ -9,6 +9,7 @@ from logging import Formatter, FileHandler
 from forms import *
 import os
 
+from geekie_api_client import GeekieAPIClient
 from geekie_oauth import OAuthClient
 
 #----------------------------------------------------------------------------#
@@ -16,42 +17,58 @@ from geekie_oauth import OAuthClient
 #----------------------------------------------------------------------------#
 
 app = Flask(__name__)
-app.config.from_object('config')
+app.config.from_object("config")
+app.config["geekie_api_client"] = GeekieAPIClient(
+    shared_secret=app.config.get("GEEKIE_API_SHARED_SECRET"),
+)
 #db = SQLAlchemy(app)
 
 # Automatically tear down SQLAlchemy.
-'''
+"""
 @app.teardown_request
 def shutdown_session(exception=None):
     db_session.remove()
-'''
+"""
 
 # Login required decorator.
-'''
+"""
 def login_required(test):
     @wraps(test)
     def wrap(*args, **kwargs):
-        if 'logged_in' in session:
+        if "logged_in" in session:
             return test(*args, **kwargs)
         else:
-            flash('You need to login first.')
-            return redirect(url_for('login'))
+            flash("You need to login first.")
+            return redirect(url_for("login"))
     return wrap
-'''
+"""
 #----------------------------------------------------------------------------#
 # Controllers.
 #----------------------------------------------------------------------------#
 
 
-@app.route('/')
+@app.route("/")
 def home():
+    return render_template("pages/home.html")
+
+
+@app.route("/who-am-i", methods=["POST"])
+def who_am_i():
+    api_client = app.config.get("geekie_api_client")
+
+    remote_organization_id = api_client.who_am_i(request.form["organization_id"]).get("organization_id")
+
+    return render_template("pages/who-am-i.html", organization_id=remote_organization_id)
+
+@app.route("/login")
+def login():
     oauth_client = OAuthClient(
-        shared_secret="my-api-key",
-        organization_id="my-orgainzation-id",
-        user_id="user-i-want-to-log-as"
+        shared_secret=app.config.get("GEEKIE_API_SHARED_SECRET"),
+        organization_id="10000000000004542",
+        user_id="noisqueavoa"
     )
     oauth_params = oauth_client.get_oauth_params()
-    return render_template('pages/placeholder.home.html', oauth_params=oauth_params)
+    return render_template("pages/login.html", oauth_params=oauth_params)
 
 # Error handlers.
 
@@ -59,34 +76,34 @@ def home():
 @app.errorhandler(500)
 def internal_error(error):
     #db_session.rollback()
-    return render_template('errors/500.html'), 500
+    return render_template("errors/500.html"), 500
 
 
 @app.errorhandler(404)
 def not_found_error(error):
-    return render_template('errors/404.html'), 404
+    return render_template("errors/404.html"), 404
 
 if not app.debug:
-    file_handler = FileHandler('error.log')
+    file_handler = FileHandler("error.log")
     file_handler.setFormatter(
-        Formatter('%(asctime)s %(levelname)s: %(message)s [in %(pathname)s:%(lineno)d]')
+        Formatter("%(asctime)s %(levelname)s: %(message)s [in %(pathname)s:%(lineno)d]")
     )
     app.logger.setLevel(logging.INFO)
     file_handler.setLevel(logging.INFO)
     app.logger.addHandler(file_handler)
-    app.logger.info('errors')
+    app.logger.info("errors")
 
 #----------------------------------------------------------------------------#
 # Launch.
 #----------------------------------------------------------------------------#
 
 # Default port:
-if __name__ == '__main__':
+if __name__ == "__main__":
     app.run()
 
 # Or specify port manually:
-'''
-if __name__ == '__main__':
-    port = int(os.environ.get('PORT', 5000))
-    app.run(host='0.0.0.0', port=port)
-'''
+"""
+if __name__ == "__main__":
+    port = int(os.environ.get("PORT", 5000))
+    app.run(host="0.0.0.0", port=port)
+"""

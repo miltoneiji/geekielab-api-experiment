@@ -1,0 +1,15 @@
+{% extends 'layouts/main.html' %}
+{% block title %}Home{% endblock %}
+{% block content %}
+
+<div class="page-header">
+  <h1>Geekie API Experiment</h1>
+</div>
+
+<form action="{{ url_for('who_am_i') }}" method="POST" class="form">
+  <label>Organization Id:<input type="text" name="organization_id" value="" /></label>
+  <button class="btn btn-primary" type="submit">Who am I?</button>
+</form>
+
+
+{% endblock %}

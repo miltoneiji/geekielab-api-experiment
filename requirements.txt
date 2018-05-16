@@ -5,6 +5,7 @@ WTForms
 coverage
 hashlib
 hmac
+requests
 # ecdsa
 # paramiko
 # pycrypto
