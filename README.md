@@ -1,6 +1,12 @@
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 
-This project is an experiment using Geekie Lab's Single Sign On. Code structure was cloned from https://github.com/realpython/flask-boilerplate.
+This project is an experiment using Geekie Lab's Single Sign On. It uses the flask boilerplate provided by https://github.com/realpython/flask-boilerplate.
+
+### Requirements
+
+* `GEEKIE_API_SECRET` env var. If you don't know your API secret, contact engineering
+* Python 2
+* Virtualenv wrapper
 
 ### Quick Start
 
@@ -20,6 +26,8 @@ This project is an experiment using Geekie Lab's Single Sign On. Code structure 
   ```
   $ pip install -r requirements.txt
   ```
+  
+  You may have to install `hashlib` using `easy_install` before running the above command.
 
 5. Run the development server:
   ```
@@ -27,10 +35,3 @@ This project is an experiment using Geekie Lab's Single Sign On. Code structure 
   ```
 
 6. Navigate to [http://localhost:5000](http://localhost:5000)
-
-### Testing the API
-
-1. Add your credential info in app.py
- 
-Edit `app.py` lines 49 to 51 with your credentials. Reload the page and try logging into Geekie Lab.
-
