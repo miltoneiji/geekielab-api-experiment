@@ -2,8 +2,7 @@
 # Imports
 #----------------------------------------------------------------------------#
 
-from flask import Flask, render_template, request
-# from flask.ext.sqlalchemy import SQLAlchemy
+from flask import Flask, redirect, render_template, request, url_for
 import logging
 from logging import Formatter, FileHandler
 from forms import *
@@ -21,31 +20,10 @@ app.config.from_object("config")
 app.config["geekie_api_client"] = GeekieAPIClient(
     shared_secret=app.config.get("GEEKIE_API_SHARED_SECRET"),
 )
-#db = SQLAlchemy(app)
 
-# Automatically tear down SQLAlchemy.
-"""
-@app.teardown_request
-def shutdown_session(exception=None):
-    db_session.remove()
-"""
-
-# Login required decorator.
-"""
-def login_required(test):
-    @wraps(test)
-    def wrap(*args, **kwargs):
-        if "logged_in" in session:
-            return test(*args, **kwargs)
-        else:
-            flash("You need to login first.")
-            return redirect(url_for("login"))
-    return wrap
-"""
 #----------------------------------------------------------------------------#
 # Controllers.
 #----------------------------------------------------------------------------#
-
 
 @app.route("/")
 def home():
@@ -56,19 +34,60 @@ def home():
 def who_am_i():
     api_client = app.config.get("geekie_api_client")
 
-    remote_organization_id = api_client.who_am_i(request.form["organization_id"]).get("organization_id")
-
-    return render_template("pages/who-am-i.html", organization_id=remote_organization_id)
-
-@app.route("/login")
-def login():
-    oauth_client = OAuthClient(
-        shared_secret=app.config.get("GEEKIE_API_SHARED_SECRET"),
-        organization_id="10000000000004542",
-        user_id="noisqueavoa"
+    remote_organization_id = api_client.who_am_i(request.form["organization_id"]).get(
+        "organization_id"
     )
-    oauth_params = oauth_client.get_oauth_params()
-    return render_template("pages/login.html", oauth_params=oauth_params)
+
+    return redirect(url_for("show_organization", organization_id=remote_organization_id))
+
+
+@app.route("/organizations/<organization_id>")
+def show_organization(organization_id):
+    return render_template("pages/show_organization.html", organization_id=organization_id)
+
+@app.route("/organizations/<organization_id>/members")
+def list_organization_memberships(organization_id):
+    api_client = app.config.get("geekie_api_client")
+
+    memberships = api_client.get_all_membershipts(organization_id)["results"]
+
+    oauth_params =  {}
+
+    for membership in memberships:
+        oauth_client = OAuthClient(
+            shared_secret=app.config.get("GEEKIE_API_SHARED_SECRET"),
+            organization_id=organization_id,
+            user_id=membership["id"]
+        )
+        oauth_params[membership["id"]] = oauth_client.get_oauth_params()
+
+    return render_template(
+        "pages/members.html",
+        organization_id=organization_id,
+        memberships=memberships,
+        oauth_params=oauth_params,
+    )
+
+
+@app.route("/organizations/<organization_id>/memberships", methods=["POST"])
+def create_membership(organization_id):
+    api_client = app.config.get("geekie_api_client")
+
+    form_data = request.form
+
+    membership_data = {
+        "full_name": form_data["full_name"],
+    }
+
+    api_client.create_membership(
+        organization_id=organization_id,
+        membership_data=membership_data
+    )
+
+    return redirect(
+        url_for("list_organization_memberships", organization_id=organization_id)
+    )
+
 
 # Error handlers.
 

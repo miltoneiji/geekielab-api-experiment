@@ -1,0 +1,13 @@
+{% extends 'layouts/main.html' %}
+{% block title %}Home{% endblock %}
+{% block content %}
+
+<div class="page-header">
+  <h1>Organization {{ organization_id }}</h1>
+</div>
+
+<p>Aparently, I'm a organization with a id = {{ organization_id }}.</p>
+
+<a href="{{ url_for('list_organization_memberships', organization_id=organization_id) }}">Show members</a>
+
+{% endblock %}

@@ -7,9 +7,8 @@
 </div>
 
 <form action="{{ url_for('who_am_i') }}" method="POST" class="form">
-  <label>Organization Id:<input type="text" name="organization_id" value="" /></label>
+  <input placeholder="Organization id" type="text" name="organization_id" value="" />
   <button class="btn btn-primary" type="submit">Who am I?</button>
 </form>
-
 
 {% endblock %}
