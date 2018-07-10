@@ -4,7 +4,7 @@ This project is an experiment using Geekie Lab's Single Sign On. It uses the fla
 
 ### Requirements
 
-* `GEEKIE_API_SECRET` env var. If you don't know your API secret, contact engineering
+* `GEEKIE_SHARED_SECRET` env var. If you don't know your API secret, contact engineering
 * Python 2
 * Virtualenv wrapper
 
@@ -26,7 +26,7 @@ This project is an experiment using Geekie Lab's Single Sign On. It uses the fla
   ```
   $ pip install -r requirements.txt
   ```
-  
+
   You may have to install `hashlib` using `easy_install` before running the above command.
 
 5. Run the development server:

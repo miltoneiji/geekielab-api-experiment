@@ -49,8 +49,8 @@ def show_organization(organization_id):
 def list_organization_memberships(organization_id):
     api_client = app.config.get("geekie_api_client")
 
-    memberships = api_client.get_all_membershipts(organization_id)["results"]
-
+    api_response = api_client.get_all_memberships(organization_id)
+    memberships = api_response["results"]
     oauth_params =  {}
 
     for membership in memberships:
@@ -82,6 +82,43 @@ def create_membership(organization_id):
     api_client.create_membership(
         organization_id=organization_id,
         membership_data=membership_data
+    )
+
+    return redirect(
+        url_for("list_organization_memberships", organization_id=organization_id)
+    )
+
+
+@app.route("/organizations/<organization_id>/memberships/<membership_id>/edit", methods=["GET"])
+def edit_membership(organization_id, membership_id):
+    api_client = app.config.get("geekie_api_client")
+
+    membership = api_client.get_membership(organization_id, membership_id)
+
+    return render_template(
+        "pages/edit_member.html",
+        organization_id=organization_id,
+        membership_id=membership_id,
+        membership=membership,
+    )
+
+
+@app.route("/organizations/<organization_id>/memberships/<membership_id>", methods=["POST"])
+def update_membership(organization_id, membership_id):
+    api_client = app.config.get("geekie_api_client")
+    form_data = request.form
+
+    membership_data = {
+        "content_group_ids": [],
+        "full_name": form_data["full_name"],
+        "roles": form_data["roles"].split(", "),
+        "tags": form_data["tags"].split(", "),
+    }
+
+    api_client.update_membership(
+        organization_id=organization_id,
+        external_id=membership_id,
+        membership_data=membership_data,
     )
 
     return redirect(

@@ -40,8 +40,8 @@ class GeekieAPIClient:
 
         return response.json()
 
-    def get_all_membershipts(self, organization_id):
-        url = "GET /organizations/{}/members/list".format(organization_id)
+    def get_all_memberships(self, organization_id):
+        url = "GET /organizations/{}/members/list?limit=200".format(organization_id)
 
         current_time = datetime.datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%S.%f")[:-3] + "Z"
 
@@ -58,7 +58,7 @@ class GeekieAPIClient:
         }
 
         response = requests.get(
-            "http://api.geekielab.com.br/organizations/{}/members/list".format(organization_id),
+            "http://api.geekielab.com.br/organizations/{}/members/list?limit=200".format(organization_id),
             headers=headers
         )
 
@@ -66,6 +66,37 @@ class GeekieAPIClient:
             return []
 
         return response.json()
+
+    def get_membership(self, organization_id, external_id):
+        url = "GET /organizations/{}/members/by-external-id/{}".format(organization_id, external_id)
+
+        current_time = datetime.datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%S.%f")[:-3] + "Z"
+
+        digest = hashlib.sha1("").hexdigest()
+
+        request_representation = url + "\n" + current_time + "\n" + digest + "\n"
+
+        signed_request = hmac.new(self.shared_secret, request_representation, hashlib.sha1).hexdigest()
+
+        headers = {
+            "Content-Type": "application/json",
+            "X-Geekie-Requested-At": current_time,
+            "X-Geekie-Signature": signed_request
+        }
+
+        response = requests.get(
+            "http://api.geekielab.com.br/organizations/{}/members/by-external-id/{}".format(
+                organization_id,
+                external_id,
+            ),
+            headers=headers
+        )
+
+        if not response.status_code == 200:
+            return {}
+
+        return response.json()
+
 
     def create_membership(self, organization_id, membership_data):
         url = "POST /organizations/{}/members".format(organization_id)
@@ -92,6 +123,43 @@ class GeekieAPIClient:
 
         response = requests.post(
             "http://api.geekielab.com.br/organizations/{}/members".format(organization_id),
+            headers=headers,
+            data=json.dumps(request_body)
+        )
+
+        if not response.status_code == 200 or not response.status_code == 201:
+            return {}
+
+        return response.json()
+
+    def update_membership(self, organization_id, external_id, membership_data):
+        url = "PUT /organizations/{}/members/by-external-id/{}".format(organization_id, external_id)
+
+        current_time = datetime.datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%S.%f")[:-3] + "Z"
+
+        request_body = {
+            "roles": membership_data.get("roles", ["student"]),
+            "tags": membership_data.get("tags", []),
+            "full_name": membership_data.get("full_name"),
+            "content_group_ids": membership_data.get("content_group_ids", []),
+        }
+        digest = hashlib.sha1(json.dumps(request_body)).hexdigest()
+
+        request_representation = url + "\n" + current_time + "\n" + digest + "\n"
+
+        signed_request = hmac.new(self.shared_secret, request_representation, hashlib.sha1).hexdigest()
+
+        headers = {
+            "Content-Type": "application/json",
+            "X-Geekie-Requested-At": current_time,
+            "X-Geekie-Signature": signed_request
+        }
+
+        response = requests.put(
+            "http://api.geekielab.com.br/organizations/{}/members/by-external-id/{}".format(
+                organization_id,
+                external_id,
+            ),
             headers=headers,
             data=json.dumps(request_body)
         )

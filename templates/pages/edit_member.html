@@ -1,0 +1,37 @@
+{% extends 'layouts/main.html' %}
+{% block title %}Edit {% endblock %}
+{% block content %}
+<div class="page-header">
+  <h1>{{ membership["full_name"] }}</h1>
+</div>
+
+<div class="page-content">
+  <div class="membership-info">
+    <span><b>id:</b> {{ membership["id"] }}</span>
+    <span><b>Name:</b> {{ membership["full_name"] }}</span>
+    <span><b>Email:</b> {{ membership["email"] }}</span>
+    <span><b>Roles:</b> {{ ",".join(membership["roles"]) }}</span>
+    <span><b>External id:</b> {{ membership["external_id"] }}</span>
+    <span><b>Deleted:</b> {{ membership["deleted"] }}</span>
+  </div>
+
+  <div class="membership-form">
+    <form
+      action="{{"/organizations/{}/memberships/{}".format(organization_id, membership["external_id"])}}"
+      method="POST"
+    >
+      <div class="form-group">
+        <label for="full_name">Name</label>
+        <input class="form-control" type="text" name="full_name" value="{{ membership["full_name"] }}" />
+      </div>
+      <div class="form-group">
+        <label for="tags">Tags</label>
+        <input class="form-control" type="text" name="tags" value="{{ ", ".join(membership["tags"]) }}" />
+      </div>
+      <input type="hidden" name="roles" value="{{ ", ".join(membership["roles"]) }}" />
+      <button class="btn btn-primary" type="submit">Atualizar</button>
+    </form>
+  </div>
+</div>
+
+{% endblock %}
