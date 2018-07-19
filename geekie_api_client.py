@@ -12,7 +12,7 @@ class GeekieAPIClient:
 
     def __init__(self, shared_secret):
         self.shared_secret = shared_secret
-        self.base_url = "https://geekielab-api-canary.herokuapp.com"
+        self.base_url = "http://api.geekielab.com.br"
 
     def who_am_i(self, organization_id):
         url = "GET /organizations/{}/who-am-i".format(organization_id)
